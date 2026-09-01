@@ -1,0 +1,12 @@
+{
+  "name": "github-auto-viewed",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GitHub の Pull Request でテストファイルなどを自動的に Viewed にする Chrome 拡張機能",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "icons": "node tools/generate-icons.mjs",
+    "pack": "rm -f github-auto-viewed.zip && zip -r -q github-auto-viewed.zip manifest.json src icons -x '*.DS_Store' && echo 'github-auto-viewed.zip を作成しました'"
+  }
+}

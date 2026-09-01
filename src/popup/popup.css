@@ -1,0 +1,207 @@
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f6f8fa;
+  --border: #d1d9e0;
+  --text: #1f2328;
+  --text-muted: #59636e;
+  --accent: #1f883d;
+  --accent-hover: #1a7f37;
+  --danger: #cf222e;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --bg-subtle: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #9198a1;
+    --accent: #238636;
+    --accent-hover: #2ea043;
+    --danger: #f85149;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 320px;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+}
+
+.panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.panel__state {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.panel__state--warn {
+  color: var(--danger);
+}
+
+.switches {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-subtle);
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.switch input {
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.button {
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button--primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.button--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: transparent;
+}
+
+.button--ghost {
+  background: transparent;
+}
+
+.result {
+  margin: 0;
+  min-height: 18px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.result--error {
+  color: var(--danger);
+}
+
+.keywords-section__title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.keywords {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 172px;
+  overflow-y: auto;
+}
+
+.keywords:empty::after {
+  content: 'キーワードが登録されていません';
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.keyword {
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  border-radius: 5px;
+}
+
+.keyword:hover {
+  background: rgba(125, 133, 144, 0.12);
+}
+
+.keyword__label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.keyword input {
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.keyword__value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.keyword--off .keyword__value {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.panel__footer {
+  display: flex;
+}
+
+.panel__footer .button {
+  width: 100%;
+}

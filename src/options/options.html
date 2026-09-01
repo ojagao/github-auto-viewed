@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GitHub Auto Viewed の設定</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="page__header">
+        <h1 class="page__title">GitHub Auto Viewed</h1>
+        <p class="page__lead">
+          Pull Request の Files changed で、キーワードに一致するファイルを自動的に Viewed
+          にして折りたたみます。
+        </p>
+      </header>
+
+      <section class="card">
+        <h2 class="card__title">キーワード</h2>
+        <p class="card__hint">
+          チェックを入れたキーワードだけが使われます。大文字小文字は既定で区別しません。
+          <code>/tests/</code> のようにスラッシュを含めるとディレクトリを指定できます
+          （パスは <code>/src/user.test.ts</code> の形で照合します）。
+        </p>
+
+        <form id="add-form" class="add-form">
+          <input
+            type="text"
+            id="keyword-input"
+            class="add-form__input"
+            placeholder="例: test, /tests/, .spec"
+            spellcheck="false"
+            autocomplete="off"
+            maxlength="200"
+          />
+          <button type="submit" class="button button--primary">追加</button>
+        </form>
+        <p id="add-message" class="hint-message" role="status" aria-live="polite"></p>
+
+        <ul id="keyword-list" class="keywords"></ul>
+
+        <div class="bulk">
+          <button type="button" id="enable-all" class="button button--small">すべて有効</button>
+          <button type="button" id="disable-all" class="button button--small">すべて無効</button>
+        </div>
+
+        <p id="keyword-warning" class="warning" role="status" aria-live="polite"></p>
+
+        <div class="presets">
+          <span class="presets__label">プリセットを追加</span>
+          <div id="preset-buttons" class="presets__buttons"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">プレビュー</h2>
+        <p class="card__hint">
+          ファイルパスを 1 行ずつ入力すると、現在の設定でどう判定されるか確認できます。
+        </p>
+        <textarea id="samples" rows="6" spellcheck="false" wrap="off"></textarea>
+        <ul id="preview-list" class="preview"></ul>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">照合方法</h2>
+
+        <fieldset class="radios">
+          <legend class="radios__legend">キーワードの解釈</legend>
+          <label class="check">
+            <input type="radio" name="match-mode" value="substring" />
+            <span>部分一致（文字列がどこかに含まれていれば対象）</span>
+          </label>
+          <label class="check">
+            <input type="radio" name="match-mode" value="regex" />
+            <span>正規表現（例: <code>\.(test|spec)\.[jt]sx?$</code>）</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="radios">
+          <legend class="radios__legend">照合する対象</legend>
+          <label class="check">
+            <input type="radio" name="match-target" value="path" />
+            <span>パス全体（<code>/src/__tests__/user.ts</code> も拾える）</span>
+          </label>
+          <label class="check">
+            <input type="radio" name="match-target" value="filename" />
+            <span>
+              ファイル名のみ（<code>user.test.ts</code>）
+              <span class="note">スラッシュを含むキーワードは、この設定でもパス全体で照合します</span>
+            </span>
+          </label>
+        </fieldset>
+
+        <label class="check">
+          <input type="checkbox" id="case-sensitive" />
+          <span>大文字と小文字を区別する</span>
+        </label>
+      </section>
+
+      <section class="card">
+        <h2 class="card__title">動作</h2>
+        <label class="check">
+          <input type="checkbox" id="enabled" />
+          <span>拡張機能を有効にする</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="auto-run" />
+          <span>Files changed を開いたら自動で実行する</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="collapse" />
+          <span>Viewed にした後、差分が開いたままなら閉じる</span>
+        </label>
+        <label class="field">
+          <span class="field__label">連続クリックの間隔（ミリ秒）</span>
+          <input type="number" id="click-interval" min="0" max="3000" step="10" />
+          <span class="field__hint">
+            ファイル数の多い Pull Request で GitHub 側の保存が追いつかない場合は大きくします。
+          </span>
+        </label>
+      </section>
+
+      <footer class="actions">
+        <button type="button" id="reset" class="button">既定値に戻す</button>
+        <span id="status" class="status" role="status" aria-live="polite"></span>
+      </footer>
+    </main>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>
