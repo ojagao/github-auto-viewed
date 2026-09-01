@@ -1,0 +1,44 @@
+name: Release
+
+# v1.0.1 のようなタグを push すると、配布用 zip を添えた Release を作成する。
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: テスト
+        run: npm test
+
+      - name: manifest の version とタグの一致を確認
+        run: |
+          manifest_version="$(node -p "require('./manifest.json').version")"
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "manifest.json の version ($manifest_version) がタグ ($tag_version) と一致しません" >&2
+            exit 1
+          fi
+          echo "version $manifest_version"
+
+      - name: 配布用 zip を作成
+        run: zip -r -q github-auto-viewed.zip manifest.json src icons -x '*.DS_Store'
+
+      - name: Release を作成
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" github-auto-viewed.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file .github/release-notes.md

@@ -73,17 +73,35 @@ Viewed を外す操作は行いません（付けるだけの片方向）。す�
 "web_accessible_resources": [{ "matches": ["https://github.com/*", "https://github.example.co.jp/*"], ... }]
 ```
 
-## 社内で配布する
+## 配布する
 
-Chrome Web Store に **限定公開（Unlisted）** で登録して URL を共有します。手順と、ダッシュボードの各入力欄にそのまま貼れる記載内容は **[STORE_LISTING.md](STORE_LISTING.md)** にまとめてあります。
+| 方法 | 配る側 | 受け取る側 | 自動更新 |
+| --- | --- | --- | --- |
+| GitHub Releases の zip | タグを push するだけ・無料 | 解凍 → デベロッパーモード ON → フォルダ選択 | ✕ |
+| Chrome Web Store の限定公開 | $5・審査 1〜3 営業日 | リンクを開いて「追加」の 1 クリック | ○ |
+
+`.crx` ファイルを直接配る方法は、Chrome が 2018 年以降ブロックしているため使えません。
+
+### GitHub Releases
+
+`manifest.json` の `version` を上げ、同じ番号のタグを push すると、テストと zip の作成を経て Release が自動で作られます。
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+タグと `version` が食い違っているとワークフローが失敗します。受け取る側の手順は [.github/release-notes.md](.github/release-notes.md) の内容がそのまま Release に載ります。
+
+### Chrome Web Store（限定公開）
+
+手順と、ダッシュボードの各入力欄にそのまま貼れる記載内容は **[STORE_LISTING.md](STORE_LISTING.md)** にまとめてあります。ローカルで zip を作るには:
 
 ```bash
 npm run pack     # github-auto-viewed.zip を作成（manifest.json / src / icons のみ）
 ```
 
 この拡張機能は、権限が `storage` `activeTab` `scripting` と `https://github.com/*` のみで、外部サーバーへの通信・リモートコードの読み込み・データ収集をいずれも行いません。審査ではこの点（単一目的・権限の必要性・データ収集なし）をそのまま説明できます。
-
-更新するときは `manifest.json` の `version` を上げてから `npm run pack` し、同じアイテムに新しい zip をアップロードします。
 
 ## 構成
 
