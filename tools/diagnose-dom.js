@@ -66,7 +66,6 @@
         ownPathAttributes: ['data-file-path', 'data-tagsearch-path', 'data-path']
           .map((name) => [name, current.getAttribute(name)])
           .filter(([, value]) => value !== null),
-        // 祖先自身ではなく、その配下にパスがあるかどうかが重要
         pathsInside: [...current.querySelectorAll(pathSelector)].slice(0, 3).map((node) => ({
           tag: node.tagName.toLowerCase(),
           value:

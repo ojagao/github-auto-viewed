@@ -19,6 +19,29 @@ import {
 /** 現在の URL が Pull Request の差分ページかどうか。 */
 export const isFilesPage = (pathname = location.pathname) => FILES_PAGE_PATTERN.test(pathname)
 
+/** 差分へのアンカー（#diff-<ハッシュ>）。行番号が付くこともあるのでハッシュ部分だけを見る。 */
+const DIFF_ANCHOR_PATTERN = /#diff-([0-9a-f]{16,})/i
+
+/**
+ * この Pull Request に含まれるファイル数を推定する。
+ *
+ * GitHub は差分を遅延読み込みするため、DOM にある差分の数だけでは全体像が分からない。
+ * ファイル一覧のリンクは最初から全ファイル分あるため、その数を総数として扱う。
+ * @returns {number} 判定できない場合は 0
+ */
+export const countKnownFiles = (root = document) => {
+  const hashes = new Set()
+
+  for (const anchor of root.querySelectorAll('a[href*="#diff-"]')) {
+    const match = anchor.getAttribute('href')?.match(DIFF_ANCHOR_PATTERN)
+    if (match) {
+      hashes.add(match[1].toLowerCase())
+    }
+  }
+
+  return hashes.size
+}
+
 /** 経路 1: パス属性を持つ要素から組み立てる。同じパスは 1 件にまとめる。 */
 const collectFromPaths = (root) => {
   const byPath = new Map()

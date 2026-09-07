@@ -4,7 +4,7 @@ import { EMPTY_RESULT, MESSAGES } from '../shared/messages.js'
 import { loadSettings, watchSettings } from '../shared/settings.js'
 import { createDomWatcher, createUrlWatcher } from './observer.js'
 import { createRunner } from './runner.js'
-import { collectFileEntries, isFilesPage } from './scanner.js'
+import { collectFileEntries, countKnownFiles, isFilesPage } from './scanner.js'
 
 /**
  * content script 本体。設定・監視・メッセージ応答を束ねる。
@@ -13,7 +13,7 @@ import { collectFileEntries, isFilesPage } from './scanner.js'
 /** popup に見せるための現在ページの状況。 */
 const buildStatus = (settings) => {
   if (!isFilesPage()) {
-    return { onFilesPage: false, total: 0, matched: 0, pending: 0 }
+    return { onFilesPage: false, total: 0, known: 0, matched: 0, pending: 0 }
   }
 
   const matcher = createMatcher(settings)
@@ -22,7 +22,10 @@ const buildStatus = (settings) => {
 
   return {
     onFilesPage: true,
+    // DOM に載っている差分の数（GitHub は遅延読み込みするため全体とは一致しない）
     total: entries.length,
+    // Pull Request 全体のファイル数の推定値
+    known: countKnownFiles(document),
     matched: matchedEntries.length,
     pending: matchedEntries.filter((entry) => !entry.viewed).length
   }

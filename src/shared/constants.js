@@ -57,6 +57,11 @@ export const DEFAULT_SETTINGS = Object.freeze({
   autoRun: true,
   /** Viewed にした後、差分が開いたままなら閉じるか */
   collapse: true,
+  /**
+   * 遅延読み込みされた差分も処理するか。
+   * GitHub は差分を順次読み込むため、これを切ると画面に出ている分しか対象にならない。
+   */
+  loadAllFiles: true,
   /** キーワードの大文字小文字を区別するか（既定は区別しない） */
   caseSensitive: false,
   matchMode: MATCH_MODES.SUBSTRING,

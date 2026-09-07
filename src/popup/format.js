@@ -7,7 +7,12 @@ export const formatPageState = (status) => {
   if (status.total === 0) {
     return '差分ファイルが見つかりません（読み込み中か、GitHub の画面構成が変わった可能性）'
   }
-  return `対象 ${status.matched} / ${status.total} ファイル（未 Viewed ${status.pending} 件）`
+
+  // GitHub は差分を遅延読み込みするため、DOM にある数と全体数がずれる
+  const unloaded = Math.max(0, (status.known ?? 0) - status.total)
+  const unloadedNote = unloaded > 0 ? `、未読み込み ${unloaded} 件` : ''
+
+  return `対象 ${status.matched} / ${status.total} ファイル（未 Viewed ${status.pending} 件${unloadedNote}）`
 }
 
 export const formatRunResult = (result) => {

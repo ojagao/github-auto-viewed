@@ -34,6 +34,12 @@ test('列挙値は既知の値以外を受け付けない', () => {
 test('真偽値以外は既定値で埋める', () => {
   assert.equal(sanitizeSettings({ enabled: 'true' }).enabled, DEFAULT_SETTINGS.enabled)
   assert.equal(sanitizeSettings({ enabled: false }).enabled, false)
+  assert.equal(sanitizeSettings({ loadAllFiles: 'no' }).loadAllFiles, DEFAULT_SETTINGS.loadAllFiles)
+  assert.equal(sanitizeSettings({ loadAllFiles: false }).loadAllFiles, false)
+})
+
+test('遅延読み込みされた差分も既定で処理する', () => {
+  assert.equal(DEFAULT_SETTINGS.loadAllFiles, true)
 })
 
 test('キーワードは空白を落とし、空と重複を除く', () => {

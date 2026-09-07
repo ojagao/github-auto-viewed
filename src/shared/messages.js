@@ -29,3 +29,20 @@ export const EMPTY_RESULT = Object.freeze({
   error: null
 })
 
+/**
+ * 2 つの実行結果を合算した新しいオブジェクトを返す。
+ * スクロールしながら数回に分けて処理するため、走査件数は合計ではなく最大値を採る
+ * （同じファイルを何度も数えないようにする）。
+ */
+export const mergeResults = (left, right) => ({
+  scanned: Math.max(left.scanned, right.scanned),
+  matched: left.matched + right.matched,
+  marked: left.marked + right.marked,
+  alreadyViewed: left.alreadyViewed + right.alreadyViewed,
+  failed: left.failed + right.failed,
+  collapsed: left.collapsed + right.collapsed,
+  markedPaths: [...left.markedPaths, ...right.markedPaths],
+  busy: left.busy || right.busy,
+  error: left.error ?? right.error
+})
+

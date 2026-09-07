@@ -112,6 +112,16 @@
           <input type="checkbox" id="collapse" />
           <span>Viewed にした後、差分が開いたままなら閉じる</span>
         </label>
+        <label class="check">
+          <input type="checkbox" id="load-all-files" />
+          <span>
+            遅延読み込みされた差分も処理する
+            <span class="note">
+              GitHub は差分を順次読み込むため、画面を自動でスクロールして残りのファイルを
+              読み込みます。オフにすると、画面に出ている分だけが対象になります
+            </span>
+          </span>
+        </label>
         <label class="field">
           <span class="field__label">連続クリックの間隔（ミリ秒）</span>
           <input type="number" id="click-interval" min="0" max="3000" step="10" />

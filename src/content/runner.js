@@ -1,9 +1,10 @@
 import { createMatcher } from '../shared/matcher.js'
-import { EMPTY_RESULT } from '../shared/messages.js'
+import { EMPTY_RESULT, mergeResults } from '../shared/messages.js'
 import { logError, logWarn } from '../shared/logger.js'
 import { delay } from './async-utils.js'
 import { collapseIfExpanded } from './collapse.js'
-import { collectFileEntries, isFilesPage } from './scanner.js'
+import { scanWhileScrolling } from './diff-loader.js'
+import { collectFileEntries, countKnownFiles, isFilesPage } from './scanner.js'
 import { MARK_STATUS, isMarked, markAsViewed } from './viewed-toggler.js'
 
 /**
@@ -11,6 +12,8 @@ import { MARK_STATUS, isMarked, markAsViewed } from './viewed-toggler.js'
  */
 
 const RERUN_DELAY_MS = 400
+
+const emptyResult = () => ({ ...EMPTY_RESULT, markedPaths: [] })
 
 const applyStatus = (result, entry, status) => {
   if (isMarked(status)) {
@@ -28,21 +31,15 @@ const applyStatus = (result, entry, status) => {
   return { ...result, failed: result.failed + 1 }
 }
 
-const executeOnce = async (settings, handled, force) => {
+/** 今 DOM にあるファイルだけを処理する。 */
+const processLoaded = async (settings, handled, force) => {
   const matcher = createMatcher(settings)
   const entries = collectFileEntries(document)
   const targets = entries.filter(
     (entry) => (force || !handled.has(entry.element)) && matcher(entry.path).matched
   )
 
-  const initial = {
-    ...EMPTY_RESULT,
-    markedPaths: [],
-    scanned: entries.length,
-    matched: targets.length
-  }
-
-  let result = initial
+  let result = { ...emptyResult(), scanned: entries.length, matched: targets.length }
 
   for (const entry of targets) {
     // 失敗しても同じ要素を延々と再試行しないよう、処理前に記録する
@@ -63,7 +60,22 @@ const executeOnce = async (settings, handled, force) => {
     }
   }
 
-  // 一致したのに 1 件も付けられない場合は、GitHub 側の DOM 変更を疑えるよう記録する
+  return result
+}
+
+/** まだ DOM に載っていない差分がありそうか。 */
+const hasUnloadedFiles = () => countKnownFiles(document) > collectFileEntries(document).length
+
+const executeOnce = async (settings, handled, force, allowScroll) => {
+  let result = await processLoaded(settings, handled, force)
+
+  // 遅延読み込みされた差分は、スクロールして DOM に載せながら順に処理する
+  if (settings.loadAllFiles && allowScroll && hasUnloadedFiles()) {
+    await scanWhileScrolling(async () => {
+      result = mergeResults(result, await processLoaded(settings, handled, false))
+    })
+  }
+
   if (result.matched > 0 && result.marked === 0 && result.failed > 0) {
     logWarn(
       `キーワードに一致した ${result.matched} 件を Viewed にできませんでした。` +
@@ -84,6 +96,8 @@ export const createRunner = () => {
   const handled = new WeakSet()
   let running = false
   let pendingSettings = null
+  /** スクロール走査を済ませたページ。同じページで何度もスクロールしないための記録 */
+  let scrolledPath = null
 
   const scheduleRerun = () => {
     if (pendingSettings === null) {
@@ -98,7 +112,7 @@ export const createRunner = () => {
 
   /**
    * @param {object} settings
-   * @param {{force?: boolean}} options force=true で処理済み記録を無視して再走査する
+   * @param {{force?: boolean}} options force=true で処理済み記録を無視し、スクロール走査もやり直す
    */
   const run = async (settings, { force = false } = {}) => {
     if (!isFilesPage()) {
@@ -111,7 +125,13 @@ export const createRunner = () => {
 
     running = true
     try {
-      return await executeOnce(settings, handled, force)
+      // 画面を動かす操作なので、1 ページにつき 1 回（手動実行なら毎回）に限る
+      const allowScroll = force || scrolledPath !== location.pathname
+      if (allowScroll) {
+        scrolledPath = location.pathname
+      }
+
+      return await executeOnce(settings, handled, force, allowScroll)
     } catch (error) {
       logError('Viewed の自動設定に失敗しました', error)
       return { ...EMPTY_RESULT, error: 'ページの操作に失敗しました。再読み込みしてください。' }
