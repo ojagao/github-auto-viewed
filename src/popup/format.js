@@ -8,11 +8,11 @@ export const formatPageState = (status) => {
     return '差分ファイルが見つかりません（読み込み中か、GitHub の画面構成が変わった可能性）'
   }
 
-  // GitHub は差分を遅延読み込みするため、DOM にある数と全体数がずれる
-  const unloaded = Math.max(0, (status.known ?? 0) - status.total)
-  const unloadedNote = unloaded > 0 ? `、未読み込み ${unloaded} 件` : ''
+  // ファイル一覧の数より走査できた数が少なければ、拡張機能側が認識できていない
+  const missing = Math.max(0, (status.known ?? 0) - status.total)
+  const missingNote = missing > 0 ? `、未認識 ${missing} 件` : ''
 
-  return `対象 ${status.matched} / ${status.total} ファイル（未 Viewed ${status.pending} 件${unloadedNote}）`
+  return `対象 ${status.matched} / ${status.total} ファイル（未 Viewed ${status.pending} 件${missingNote}）`
 }
 
 export const formatRunResult = (result) => {

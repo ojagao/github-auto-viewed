@@ -18,7 +18,6 @@ const dom = {
   enabled: document.getElementById('enabled'),
   autoRun: document.getElementById('auto-run'),
   collapse: document.getElementById('collapse'),
-  loadAllFiles: document.getElementById('load-all-files'),
   caseSensitive: document.getElementById('case-sensitive'),
   clickInterval: document.getElementById('click-interval'),
   addForm: document.getElementById('add-form'),
@@ -52,7 +51,6 @@ const readInputs = () => ({
   enabled: dom.enabled.checked,
   autoRun: dom.autoRun.checked,
   collapse: dom.collapse.checked,
-  loadAllFiles: dom.loadAllFiles.checked,
   caseSensitive: dom.caseSensitive.checked,
   matchMode: readRadio('match-mode'),
   matchTarget: readRadio('match-target'),
@@ -110,7 +108,6 @@ const renderAll = () => {
   dom.enabled.checked = settings.enabled
   dom.autoRun.checked = settings.autoRun
   dom.collapse.checked = settings.collapse
-  dom.loadAllFiles.checked = settings.loadAllFiles
   dom.caseSensitive.checked = settings.caseSensitive
   dom.clickInterval.value = String(settings.clickIntervalMs)
   writeRadio('match-mode', settings.matchMode)
@@ -193,7 +190,6 @@ const initialize = async () => {
     dom.enabled,
     dom.autoRun,
     dom.collapse,
-    dom.loadAllFiles,
     dom.caseSensitive,
     dom.clickInterval,
     ...document.querySelectorAll('input[name="match-mode"], input[name="match-target"]')

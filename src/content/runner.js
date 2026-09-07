@@ -1,9 +1,8 @@
 import { createMatcher } from '../shared/matcher.js'
-import { EMPTY_RESULT, mergeResults } from '../shared/messages.js'
+import { EMPTY_RESULT } from '../shared/messages.js'
 import { logError, logWarn } from '../shared/logger.js'
 import { delay } from './async-utils.js'
 import { collapseIfExpanded } from './collapse.js'
-import { scanWhileScrolling } from './diff-loader.js'
 import { collectFileEntries, countKnownFiles, isFilesPage } from './scanner.js'
 import { MARK_STATUS, isMarked, markAsViewed } from './viewed-toggler.js'
 
@@ -69,22 +68,15 @@ const processLoaded = async (settings, handled, force) => {
   return result
 }
 
-/** まだ DOM に載っていない差分がありそうか。 */
-const hasUnloadedFiles = () => countKnownFiles(document) > collectFileEntries(document).length
+const executeOnce = async (settings, handled, force) => {
+  const result = await processLoaded(settings, handled, force)
 
-const executeOnce = async (settings, handled, force, allowScroll) => {
-  let result = await processLoaded(settings, handled, force)
-
-  // 遅延読み込みされた差分は、スクロールして DOM に載せながら順に処理する
-  if (settings.loadAllFiles && allowScroll && hasUnloadedFiles()) {
-    await scanWhileScrolling(
-      async () => {
-        result = mergeResults(result, await processLoaded(settings, handled, false))
-      },
-      {
-        countFiles: () => collectFileEntries(document).length,
-        targetCount: countKnownFiles(document)
-      }
+  // ファイル一覧の数と走査できた数が食い違う場合は、走査漏れを疑えるよう記録する
+  const knownCount = countKnownFiles(document)
+  if (knownCount > result.scanned) {
+    logWarn(
+      `${knownCount} ファイルのうち ${result.scanned} ファイルしか走査できませんでした。` +
+        'tools/diagnose-dom.js で DOM 構造を確認してください。'
     )
   }
 
@@ -108,8 +100,6 @@ export const createRunner = () => {
   const handled = new WeakSet()
   let running = false
   let pendingSettings = null
-  /** スクロール走査を済ませたページ。同じページで何度もスクロールしないための記録 */
-  let scrolledPath = null
 
   const scheduleRerun = () => {
     if (pendingSettings === null) {
@@ -124,7 +114,7 @@ export const createRunner = () => {
 
   /**
    * @param {object} settings
-   * @param {{force?: boolean}} options force=true で処理済み記録を無視し、スクロール走査もやり直す
+   * @param {{force?: boolean}} options force=true で処理済み記録を無視して再評価する
    */
   const run = async (settings, { force = false } = {}) => {
     if (!isFilesPage()) {
@@ -137,13 +127,7 @@ export const createRunner = () => {
 
     running = true
     try {
-      // 画面を動かす操作なので、1 ページにつき 1 回（手動実行なら毎回）に限る
-      const allowScroll = force || scrolledPath !== location.pathname
-      if (allowScroll) {
-        scrolledPath = location.pathname
-      }
-
-      return await executeOnce(settings, handled, force, allowScroll)
+      return await executeOnce(settings, handled, force)
     } catch (error) {
       logError('Viewed の自動設定に失敗しました', error)
       return { ...EMPTY_RESULT, error: 'ページの操作に失敗しました。再読み込みしてください。' }

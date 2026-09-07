@@ -79,7 +79,6 @@ export const sanitizeSettings = (raw) => {
     enabled: asBoolean(source.enabled, DEFAULT_SETTINGS.enabled),
     autoRun: asBoolean(source.autoRun, DEFAULT_SETTINGS.autoRun),
     collapse: asBoolean(source.collapse, DEFAULT_SETTINGS.collapse),
-    loadAllFiles: asBoolean(source.loadAllFiles, DEFAULT_SETTINGS.loadAllFiles),
     caseSensitive: asBoolean(source.caseSensitive, DEFAULT_SETTINGS.caseSensitive),
     matchMode: asOneOf(source.matchMode, Object.values(MATCH_MODES), DEFAULT_SETTINGS.matchMode),
     matchTarget: asOneOf(

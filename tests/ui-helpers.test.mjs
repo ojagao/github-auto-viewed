@@ -18,10 +18,10 @@ test('ページ状態の文言', () => {
   )
 })
 
-test('遅延読み込みで未取得のファイルがあれば件数を添える', () => {
+test('走査できなかったファイルがあれば件数を添える', () => {
   assert.equal(
     formatPageState({ onFilesPage: true, total: 10, known: 28, matched: 8, pending: 2 }),
-    '対象 8 / 10 ファイル（未 Viewed 2 件、未読み込み 18 件）'
+    '対象 8 / 10 ファイル（未 Viewed 2 件、未認識 18 件）'
   )
 })
 
