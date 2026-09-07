@@ -87,7 +87,13 @@ export const scanWhileScrolling = async (onStep, { countFiles, targetCount }) =>
       }
 
       await delay(WAIT_MS)
-      await onStep()
+
+      // ある位置の処理が失敗しても、残りのファイルの走査は続ける
+      try {
+        await onStep()
+      } catch (error) {
+        logWarn('この位置の差分の処理に失敗しました。走査は続けます。', error)
+      }
 
       const count = countFiles()
       if (targetCount > 0 && count >= targetCount) {

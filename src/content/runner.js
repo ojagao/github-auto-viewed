@@ -45,14 +45,20 @@ const processLoaded = async (settings, handled, force) => {
     // 失敗しても同じ要素を延々と再試行しないよう、処理前に記録する
     handled.add(entry.element)
 
-    const { status } = await markAsViewed(entry)
-    result = applyStatus(result, entry, status)
+    // 1 ファイルの失敗で残りのファイルを処理しなくなるのを避ける
+    try {
+      const { status } = await markAsViewed(entry)
+      result = applyStatus(result, entry, status)
 
-    if (isMarked(status) && settings.collapse) {
-      const collapsed = await collapseIfExpanded(entry.element)
-      if (collapsed) {
-        result = { ...result, collapsed: result.collapsed + 1 }
+      if (isMarked(status) && settings.collapse) {
+        const collapsed = await collapseIfExpanded(entry.element)
+        if (collapsed) {
+          result = { ...result, collapsed: result.collapsed + 1 }
+        }
       }
+    } catch (error) {
+      logWarn(`このファイルの処理に失敗しました: ${entry.path}`, error)
+      result = { ...result, failed: result.failed + 1 }
     }
 
     if (settings.clickIntervalMs > 0) {
