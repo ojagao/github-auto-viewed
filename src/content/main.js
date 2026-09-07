@@ -36,6 +36,11 @@ const notifyBackground = (type, payload) => {
   chrome.runtime.sendMessage({ type, payload }).catch(() => undefined)
 }
 
+/**
+ * content script の本体を起動する。
+ * @returns {Promise<() => void>} 監視とリスナーを解除する関数。
+ *   拡張機能の再読み込み後に再注入されたとき、古いインスタンスを止めるために使う。
+ */
 export const start = async () => {
   let settings = await loadSettings()
   const runner = createRunner()
@@ -73,12 +78,12 @@ export const start = async () => {
     void runAuto()
   })
 
-  watchSettings((next) => {
+  const unwatchSettings = watchSettings((next) => {
     settings = next
     void runAuto({ force: true })
   })
 
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  const handleMessage = (message, _sender, sendResponse) => {
     if (message?.type === MESSAGES.RUN_NOW) {
       runManually()
         .then(sendResponse)
@@ -95,9 +100,18 @@ export const start = async () => {
     }
 
     return false
-  })
+  }
+
+  chrome.runtime.onMessage.addListener(handleMessage)
 
   notifyBackground(MESSAGES.CLEAR_BADGE)
   domWatcher.start()
   urlWatcher.start()
+
+  return () => {
+    domWatcher.stop()
+    urlWatcher.stop()
+    unwatchSettings()
+    chrome.runtime.onMessage.removeListener(handleMessage)
+  }
 }

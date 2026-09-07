@@ -1,5 +1,5 @@
 import { setKeywordEnabled } from '../shared/keywords.js'
-import { logError } from '../shared/logger.js'
+import { logError, logWarn } from '../shared/logger.js'
 import { MESSAGES } from '../shared/messages.js'
 import { loadSettings, saveSettings } from '../shared/settings.js'
 import { formatPageState, formatRunResult } from './format.js'
@@ -55,8 +55,9 @@ const refreshPageState = async () => {
     setPageState(formatPageState(status))
     dom.runNow.disabled = !status.onFilesPage
   } catch (error) {
-    logError('ページ状態の取得に失敗しました', error)
-    setPageState('ページと通信できませんでした。再読み込みしてください。', true)
+    // 拡張機能を再読み込みした直後などに起きる。ページのリロードで回復する
+    logWarn('ページと通信できませんでした', error)
+    setPageState('ページを再読み込みしてください（拡張機能の更新後は必要です）', true)
     dom.runNow.disabled = true
   }
 }
@@ -82,8 +83,8 @@ const runNow = async () => {
     setResult(formatRunResult(result), Boolean(result.error))
     await refreshPageState()
   } catch (error) {
-    logError('実行に失敗しました', error)
-    setResult('ページと通信できませんでした。再読み込みしてください。', true)
+    logWarn('ページと通信できませんでした', error)
+    setResult('ページを再読み込みしてから、もう一度お試しください', true)
   } finally {
     dom.runNow.disabled = false
   }
