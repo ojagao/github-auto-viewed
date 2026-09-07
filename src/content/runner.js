@@ -71,9 +71,15 @@ const executeOnce = async (settings, handled, force, allowScroll) => {
 
   // 遅延読み込みされた差分は、スクロールして DOM に載せながら順に処理する
   if (settings.loadAllFiles && allowScroll && hasUnloadedFiles()) {
-    await scanWhileScrolling(async () => {
-      result = mergeResults(result, await processLoaded(settings, handled, false))
-    })
+    await scanWhileScrolling(
+      async () => {
+        result = mergeResults(result, await processLoaded(settings, handled, false))
+      },
+      {
+        countFiles: () => collectFileEntries(document).length,
+        targetCount: countKnownFiles(document)
+      }
+    )
   }
 
   if (result.matched > 0 && result.marked === 0 && result.failed > 0) {

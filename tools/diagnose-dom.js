@@ -117,6 +117,66 @@
           viewedButtonFound: container?.querySelector('button[class*="MarkAsViewedButton"]') !== null
         }
       }),
+    // 遅延読み込みが進まない原因を調べる
+    loadingHints: {
+      progressiveListChildren:
+        document.querySelector('[data-testid="progressive-diffs-list"]')?.children.length ?? null,
+      dataFilePathCount: document.querySelectorAll('[data-file-path]').length,
+      uniqueDiffAnchors: (() => {
+        const hashes = new Set()
+        for (const anchor of document.querySelectorAll('a[href*="#diff-"]')) {
+          const match = anchor.getAttribute('href')?.match(/#diff-([0-9a-f]{16,})/i)
+          if (match) {
+            hashes.add(match[1].toLowerCase())
+          }
+        }
+        return hashes.size
+      })(),
+      scroll: {
+        documentScrollHeight: document.documentElement.scrollHeight,
+        innerHeight: window.innerHeight,
+        scrollY: window.scrollY
+      },
+      // 差分リストが内部でスクロールしていないかを確認する
+      scrollableAncestors: (() => {
+        const found = []
+        let current =
+          document.querySelector('[data-testid="progressive-diffs-list"]')?.parentElement ?? null
+        let depth = 0
+
+        while (current !== null && current !== document.body && depth < 12) {
+          const { overflowY } = getComputedStyle(current)
+          if (/(auto|scroll)/.test(overflowY)) {
+            found.push({
+              depth,
+              className:
+                typeof current.className === 'string' ? current.className.slice(0, 80) : null,
+              testId: current.getAttribute('data-testid'),
+              overflowY,
+              scrollHeight: current.scrollHeight,
+              clientHeight: current.clientHeight
+            })
+          }
+          current = current.parentElement
+          depth += 1
+        }
+
+        return found
+      })(),
+      // 「さらに読み込む」系のボタンが出ていないかを確認する
+      buttonTexts: [
+        ...new Set(
+          [...document.querySelectorAll('button')]
+            .filter((button) => button.offsetParent !== null)
+            .map((button) => (button.textContent ?? '').replace(/\s+/g, ' ').trim())
+            .filter((text) => text.length > 0 && text.length < 60)
+        )
+      ].slice(0, 40),
+      fileCountText:
+        (document.body.innerText ?? '').match(
+          /(\d+)\s*(changed files?|files? changed|個のファイル)/i
+        )?.[0] ?? null
+    },
     // 折りたたみに使えるボタンと、差分本体の見つけ方を調べる
     collapseHints: (() => {
       const container = document.querySelector(
