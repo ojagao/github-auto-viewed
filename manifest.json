@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GitHub Auto Viewed",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GitHub の Pull Request で、test や spec などのキーワードに一致するファイルを自動的に Viewed にして折りたたみます。",
   "minimum_chrome_version": "93",
   "permissions": ["storage", "activeTab", "scripting"],

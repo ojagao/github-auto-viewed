@@ -1,6 +1,6 @@
 {
   "name": "github-auto-viewed",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "GitHub の Pull Request でテストファイルなどを自動的に Viewed にする Chrome 拡張機能",
